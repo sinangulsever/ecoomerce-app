@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\CategoryController;
@@ -12,4 +13,5 @@ Route::put('profile', [AuthController::class, 'updateProfile'])->middleware('aut
 
 Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('categories', CategoryController::class);
+    Route::resource('products', ProductController::class);
 });
