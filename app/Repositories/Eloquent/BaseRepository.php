@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Repositories\Interfaces\BaseRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -38,6 +39,11 @@ class BaseRepository implements BaseRepositoryInterface
     public function delete($id): int
     {
         return $this->model->destroy($id);
+    }
+
+    public function query(): Builder
+    {
+        return $this->model->newQuery();
     }
 
 }
