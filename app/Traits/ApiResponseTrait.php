@@ -99,6 +99,8 @@ trait ApiResponseTrait
      */
     protected function paginateResponse(LengthAwarePaginator $paginator, $resourceClass = null, string $message = null): JsonResponse
     {
+        $paginator->appends(request()->query());
+
         $data = $resourceClass ? $resourceClass::collection($paginator) : $paginator->items();
 
         return $this->successResponse(
@@ -112,6 +114,7 @@ trait ApiResponseTrait
                     'last_page' => $paginator->lastPage(),
                     'from' => $paginator->firstItem(),
                     'to' => $paginator->lastItem(),
+                    'links' => $paginator->linkCollection(),
                 ]
             ]
         );

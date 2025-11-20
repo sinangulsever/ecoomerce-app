@@ -4,8 +4,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use App\Exceptions\ApiExceptionHandler;
-use Illuminate\Auth\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,82 +17,64 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
-        $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (!($request->is('api/*') || $request->expectsJson())) {
+                return $e;
+            }
+
+            $status = match (true) {
+                $e instanceof \Illuminate\Auth\AuthenticationException => 401,
+                $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException, $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException => 404,
+                $e instanceof \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException, $e instanceof \Illuminate\Auth\Access\AuthorizationException => 403,
+                $e instanceof \Spatie\QueryBuilder\Exceptions\InvalidFilterQuery, $e instanceof \Spatie\QueryBuilder\Exceptions\InvalidSortQuery => 400,
+                $e instanceof \Illuminate\Database\QueryException, $e instanceof \ErrorException, $e instanceof \BadMethodCallException => 500,
+                $e instanceof \Illuminate\Validation\ValidationException => 422,
+                $e instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException => 405,
+                $e instanceof \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException => 429,
+                default => $e->getCode() ?: 500
+            };
+
+            $message = match (true) {
+                $e instanceof \Illuminate\Auth\AuthenticationException => 'Kimlik doğrulaması gerekli. Token geçersiz veya eksik.',
+                $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException => 'Aranan kaynak bulunamadı.',
+                $e instanceof \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException => 'Bu işlemi gerçekleştirmek için yetkiniz yok.',
+                $e instanceof \Spatie\QueryBuilder\Exceptions\InvalidFilterQuery => 'Geçersiz filtre sorgusu.',
+                $e instanceof \Spatie\QueryBuilder\Exceptions\InvalidSortQuery => 'Geçersiz sıralama sorgusu.',
+                $e instanceof \Illuminate\Database\QueryException => 'Veritabanı hatası oluştu.',
+                $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException => 'İstenen kaynak bulunamadı.',
+                $e instanceof \Illuminate\Validation\ValidationException => 'Doğrulama hatası oluştu.',
+                $e instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException => 'İzin verilmeyen HTTP metodu kullanıldı.',
+                $e instanceof \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException => 'Çok fazla istek yapıldı. Lütfen daha sonra tekrar deneyin.',
+                default => 'Beklenmeyen bir hata oluştu.'
+            };
+
+
+            $errors = match (true) {
+                $e instanceof \Illuminate\Validation\ValidationException => $e->errors(),
+                default => null,
+            };
+
+            if (!is_null($errors)) {
                 return rj(
                     status: false,
-                    message: 'Kimlik doğrulaması gerekli. Token geçersiz veya eksik.',
-                    errors: [
-                        'type' => 'AuthenticationException',
-                        'timestamp' => now()->toISOString(),
-                    ],
-                    httpCode: 401
+                    message: $message,
+                    errors: $errors,
+                    httpCode: $status
                 );
             }
-            return $e;
+
+
+            return rj(
+                status: false,
+                message: $message,
+                errors: [
+                    'type' => class_basename($e),
+                    'message' => $e->getMessage(),
+                    'status' => $status,
+                    'timestamp' => now()->toISOString(),
+                ],
+                httpCode: $status
+            );
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
-
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return rj(
-                    status: false,
-                    message: 'Aranan kaynak bulunamadı.',
-                    errors: [
-                        'message' => $e->getMessage(),
-                        'type' => 'NotFoundHttpException',
-                        'status' => 404,
-                        'timestamp' => now()->toISOString(),
-                    ],
-                    httpCode: 404
-                );
-            }
-            return $e;
-        });
-
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, Request $request) {
-
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return rj(
-                    status: false,
-                    message: 'Bu işlemi gerçekleştirmek için yetkiniz yok.',
-                    errors: [
-                        'type' => 'AccessDeniedHttpException',
-                        'status' => 403,
-                        'timestamp' => now()->toISOString(),
-                    ],
-                    httpCode: 403
-                );
-            }
-            return $e;
-        });
-
-
-        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
-            if (($request->is('api/*') || $request->expectsJson())) {
-
-                $className = get_class($e);
-                $handlers = ApiExceptionHandler::$handlers;
-
-                if (array_key_exists($className, $handlers)) {
-                    $method = $handlers[$className];
-
-                    $apiHandler = new ApiExceptionHandler();
-                    return $apiHandler->$method($e, $request);
-                }
-
-                return rj(
-                    status: false,
-                    message: 'An unexpected error occurred',
-                    errors: [
-                        'type' => basename(get_class($e)),
-                        'status' => $e->getCode() ?: 500,
-                        'message' => $e->getMessage() ?: 'An unexpected error occurred',
-                        'timestamp' => now()->toISOString(),
-                    ],
-                    httpCode: $e->getCode() ?: 500,
-                );
-            }
-            return $e;
-        });
     })->create();
