@@ -33,6 +33,43 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return $e;
         });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return rj(
+                    status: false,
+                    message: 'Aranan kaynak bulunamadı.',
+                    errors: [
+                        'message' => $e->getMessage(),
+                        'type' => 'NotFoundHttpException',
+                        'status' => 404,
+                        'timestamp' => now()->toISOString(),
+                    ],
+                    httpCode: 404
+                );
+            }
+            return $e;
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, Request $request) {
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return rj(
+                    status: false,
+                    message: 'Bu işlemi gerçekleştirmek için yetkiniz yok.',
+                    errors: [
+                        'type' => 'AccessDeniedHttpException',
+                        'status' => 403,
+                        'timestamp' => now()->toISOString(),
+                    ],
+                    httpCode: 403
+                );
+            }
+            return $e;
+        });
+
+
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             if (($request->is('api/*') || $request->expectsJson())) {
 
@@ -54,11 +91,6 @@ return Application::configure(basePath: dirname(__DIR__))
                         'status' => $e->getCode() ?: 500,
                         'message' => $e->getMessage() ?: 'An unexpected error occurred',
                         'timestamp' => now()->toISOString(),
-//                        'debug' => app()->environment('local', 'testing') ? [
-//                            'file' => $e->getFile(),
-//                            'line' => $e->getLine(),
-//                            'trace' => $e->getTraceAsString()
-//                        ] : null
                     ],
                     httpCode: $e->getCode() ?: 500,
                 );
