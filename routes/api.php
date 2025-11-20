@@ -7,8 +7,8 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 
-Route::post('register', [AuthController::class, 'register'])->middleware('throttle:225,1');
-Route::post('login', [AuthController::class, 'login'])->middleware('throttle:225,1')->name('login');
+Route::post('register', [AuthController::class, 'register'])->middleware('throttle:20,1');
+Route::post('login', [AuthController::class, 'login'])->middleware('throttle:20,1')->name('login');
 Route::get('profile', [AuthController::class, 'profile']);
 Route::put('profile', [AuthController::class, 'updateProfile']);
 
