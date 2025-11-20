@@ -25,7 +25,10 @@ class ProductController extends BaseApiController
      */
     public function index(): JsonResponse
     {
-        return $this->paginateResponse(paginator: $this->productService->getAllProducts(), resourceClass: ProductResource::class);
+        return $this->paginateResponse(
+            paginator: $this->productService->getAllProducts(),
+            resourceClass: ProductResource::class
+        );
     }
 
     /**
@@ -38,7 +41,10 @@ class ProductController extends BaseApiController
         if (empty($product)) {
             return $this->errorResponse(message: 'Product not found', httpCode: 404);
         }
-        return $this->successResponse(data: new ProductResource($product), message: 'Product retrieved successfully');
+        return $this->successResponse(
+            data: new ProductResource($product),
+            message: 'Product retrieved successfully'
+        );
     }
 
     /**
@@ -46,11 +52,15 @@ class ProductController extends BaseApiController
      * @param StoreProductRequest $request
      * @return JsonResponse
      */
-    public function store(StoreProductRequest $request)
+    public function store(StoreProductRequest $request): JsonResponse
     {
         $this->authorize('create', Product::class);
         $product = $this->productService->createProduct($request->validated());
-        return $this->successResponse(data: new ProductResource($product), message: 'Product created successfully', httpCode: 201);
+        return $this->successResponse(
+            data: new ProductResource($product),
+            message: 'Product created successfully',
+            httpCode: 201
+        );
     }
 
     /**
@@ -63,7 +73,10 @@ class ProductController extends BaseApiController
     {
         $this->authorize('update', $product);
         $product = $this->productService->updateProduct($product, $request->validated());
-        return $this->successResponse(data: new ProductResource($product), message: 'Product updated successfully');
+        return $this->successResponse(
+            data: new ProductResource($product),
+            message: 'Product updated successfully'
+        );
     }
 
     /**
@@ -77,7 +90,10 @@ class ProductController extends BaseApiController
         if ($this->productService->deleteProduct($product->id)) {
             return $this->noContentResponse();
         }
-        return $this->errorResponse(message: 'Product could not be deleted', httpCode: 500);
+        return $this->errorResponse(
+            message: 'Product could not be deleted',
+            httpCode: 500
+        );
 
     }
 

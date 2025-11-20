@@ -5,16 +5,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\OrderController;
 
 Route::post('register', [AuthController::class, 'register'])->middleware('throttle:225,1');
 Route::post('login', [AuthController::class, 'login'])->middleware('throttle:225,1')->name('login');
-Route::get('profile', [AuthController::class, 'profile'])->middleware('auth:api');
-Route::put('profile', [AuthController::class, 'updateProfile'])->middleware('auth:api');
+Route::get('profile', [AuthController::class, 'profile']);
+Route::put('profile', [AuthController::class, 'updateProfile']);
 
 
 Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
+    Route::resource('orders', OrderController::class);
 
     Route::controller(CartController::class)->group(function () {
         Route::get('cart', 'index');

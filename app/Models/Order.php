@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +30,8 @@ class Order extends Model
 
     protected $casts = [
         'user_id' => 'int',
-        'total_amount' => 'float'
+        'total_amount' => 'float',
+        'status' => OrderStatus::class,
     ];
 
     protected $fillable = [

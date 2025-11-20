@@ -13,6 +13,12 @@ class CartService
     }
 
 
+    /**
+     * Get cart by user ID
+     *
+     * @param int $userId
+     * @return Cart|null
+     */
     public function getCartByUser(int $userId): ?Cart
     {
         $cart = $this->cartRepository->query()->where('user_id', $userId)->first();
