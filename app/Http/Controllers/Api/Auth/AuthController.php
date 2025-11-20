@@ -33,7 +33,11 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = $this->userService->register($request->validated());
-        return $this->successResponse(data: new UserResource($user), message: 'User registered successfully', httpCode: 201);
+        return $this->successResponse(
+            data: new UserResource($user),
+            message: 'User registered successfully',
+            httpCode: 201
+        );
     }
 
     /**
@@ -50,10 +54,13 @@ class AuthController extends Controller
             return $this->unauthorizedResponse(message: 'Kullanıcı bulunamadı');
         }
 
-        return $this->successResponse(data: new AuthResource([
-            'token' => $token,
-            'user' => getUser(),
-        ]), message: 'User logged in successfully');
+        return $this->successResponse(
+            data: new AuthResource([
+                'token' => $token,
+                'user' => getUser(),
+            ]),
+            message: 'User logged in successfully'
+        );
 
     }
 
@@ -64,7 +71,10 @@ class AuthController extends Controller
      */
     public function profile(): JsonResponse
     {
-        return $this->successResponse(data: new UserResource(getUser()), message: 'User profile retrieved successfully');
+        return $this->successResponse(
+            data: new UserResource(getUser()),
+            message: 'User profile retrieved successfully'
+        );
     }
 
     /**
@@ -76,6 +86,9 @@ class AuthController extends Controller
     public function updateProfile(UpdateUserRequest $request): JsonResponse
     {
         $user = $this->userService->updateUser(getUser(), $request->validated());
-        return $this->successResponse(data: new UserResource($user), message: 'User profile updated successfully');
+        return $this->successResponse(
+            data: new UserResource($user),
+            message: 'User profile updated successfully'
+        );
     }
 }

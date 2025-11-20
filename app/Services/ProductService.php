@@ -32,7 +32,7 @@ class ProductService
                     'min_price',
                     FilterOperator::GREATER_THAN_OR_EQUAL,
                     'and',
-                    'price' // DB column
+                    'price'
                 ),
 
                 AllowedFilter::operator(
@@ -41,9 +41,6 @@ class ProductService
                     'and',
                     'price'
                 ),
-//                AllowedFilter::operator('min_price', FilterOperator::GREATER_THAN_OR_EQUAL,false,'price'),
-//                AllowedFilter::operator('max_price', FilterOperator::LESS_THAN_OR_EQUAL,true,'price'),
-
             ])
             ->allowedSorts([
                 AllowedSort::field('name'),

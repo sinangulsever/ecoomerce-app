@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Cart\AddCartRequest;
-use App\Http\Requests\Api\Cart\RemoveCartRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Product;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CartController extends BaseApiController
 {
@@ -27,7 +24,10 @@ class CartController extends BaseApiController
      */
     public function index(): JsonResponse
     {
-        return $this->successResponse(data: new CartResource($this->cartService->getCartByUser(getUser()->id)), message: 'Cart retrieved successfully');
+        return $this->successResponse(
+            data: new CartResource($this->cartService->getCartByUser(getUser()->id)),
+            message: 'Cart retrieved successfully'
+        );
     }
 
 
@@ -38,9 +38,11 @@ class CartController extends BaseApiController
      */
     public function addToCart(AddCartRequest $request): JsonResponse
     {
-        $cart = $this->cartService->getCartByUser(getUser()->id);
-        $updatedCart = $this->cartService->addProductToCart($cart, $request->product_id, $request->quantity);
-        return $this->successResponse(data: new CartResource($updatedCart), message: 'Product added to cart successfully');
+        $updatedCart = $this->cartService->addProductToCart(getUser()->cart, $request->product_id, $request->quantity);
+        return $this->successResponse(
+            data: new CartResource($updatedCart),
+            message: 'Product added to cart successfully'
+        );
     }
 
 
@@ -54,9 +56,11 @@ class CartController extends BaseApiController
         if (!$product) {
             return $this->errorResponse(message: 'Product not found', httpCode: 404);
         }
-        $cart = $this->cartService->getCartByUser(getUser()->id);
-        $this->cartService->removeProductFromCart($cart, $product->id);
-        return $this->successResponse(data: new CartResource($cart->refresh()), message: 'Product removed from cart successfully');
+        $this->cartService->removeProductFromCart(getUser()->cart, $product->id);
+        return $this->successResponse(
+            data: new CartResource(getUser()->cart),
+            message: 'Product removed from cart successfully'
+        );
 
     }
 
@@ -66,9 +70,11 @@ class CartController extends BaseApiController
      */
     public function clearFromCart(): JsonResponse
     {
-        $cart = $this->cartService->getCartByUser(getUser()->id);
-        $this->cartService->clearCart($cart);
-        return $this->successResponse(data: new CartResource($cart->refresh()), message: 'Cart cleared successfully');
+        $this->cartService->clearCart(getUser()->cart);
+        return $this->successResponse(
+            data: new CartResource(getUser()->cart),
+            message: 'Cart cleared successfully'
+        );
 
     }
 

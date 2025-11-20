@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
+ * @property-read Cart|null $cart
  * @package App\Models
  */
 class User extends Authenticatable implements JWTSubject
@@ -63,6 +65,11 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
     }
 
     public function getJWTIdentifier()

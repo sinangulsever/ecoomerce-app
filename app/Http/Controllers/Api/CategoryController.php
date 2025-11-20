@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\Role;
 use App\Http\Requests\Api\Category\StoreCategoryRequest;
 use App\Http\Requests\Api\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
@@ -27,7 +26,10 @@ class CategoryController extends BaseApiController
      */
     public function index(): JsonResponse
     {
-        return $this->paginateResponse(paginator: $this->categoryService->getAllCategoriesByUser(), resourceClass: CategoryResource::class);
+        return $this->paginateResponse(
+            paginator: $this->categoryService->getAllCategoriesByUser(),
+            resourceClass: CategoryResource::class
+        );
     }
 
     /**
@@ -39,7 +41,11 @@ class CategoryController extends BaseApiController
     {
         $this->authorize('create', Category::class);
         $category = $this->categoryService->createCategory($request->validated());
-        return $this->successResponse(data: new CategoryResource($category), message: 'Category created successfully', httpCode: 201);
+        return $this->successResponse(
+            data: new CategoryResource($category),
+            message: 'Category created successfully',
+            httpCode: 201
+        );
     }
 
     /**
@@ -49,7 +55,10 @@ class CategoryController extends BaseApiController
      */
     public function show(Category $category): JsonResponse
     {
-        return $this->successResponse(data: new CategoryResource($category), message: 'Category retrieved successfully');
+        return $this->successResponse(
+            data: new CategoryResource($category),
+            message: 'Category retrieved successfully'
+        );
     }
 
     /**
@@ -62,7 +71,10 @@ class CategoryController extends BaseApiController
     {
         $this->authorize('update', $category);
         $updatedCategory = $this->categoryService->updateCategory($category, $request->validated());
-        return $this->successResponse(data: new CategoryResource($updatedCategory), message: 'Category updated successfully');
+        return $this->successResponse(
+            data: new CategoryResource($updatedCategory),
+            message: 'Category updated successfully'
+        );
     }
 
     /**
@@ -76,7 +88,7 @@ class CategoryController extends BaseApiController
         if ($this->categoryService->deleteCategory($category->id)) {
             return $this->noContentResponse();
         }
-        return $this->serverErrorResponse('Category could not be deleted.');
+        return $this->serverErrorResponse(message: 'Category could not be deleted.');
 
     }
 
